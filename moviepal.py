@@ -1,8 +1,5 @@
 from bs4 import BeautifulSoup as bs
 from requests import get
-import pprint
-import webbrowser as wb
-pp = pprint.PrettyPrinter()
 
 class Movie(object):
 	"""docstring for Movie"""
