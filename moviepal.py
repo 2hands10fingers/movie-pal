@@ -115,6 +115,3 @@ class mp():
     def query(key="", the_site=""):
         the_query = mp.display(mp.in_theaters(site=the_site), key=key)
         return the_query
-
-
-print(mp.query())
