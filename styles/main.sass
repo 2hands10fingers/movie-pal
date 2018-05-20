@@ -1,4 +1,5 @@
 body
+	// background-color: lightblue
 	font-family: 'Source Sans Pro', sans-serif !important
 	background: url('../img/bg.jpg') no-repeat
 	
@@ -69,8 +70,12 @@ body
 			&--container
 				width: 33%
 				border-radius: 50px
+				// background-color: black
 				background: url('../img/ticket-bg.png') no-repeat 50%/cover
-				padding: 1rem
+				padding: 2rem 0
+				// box-shadow: 0px 15px 15px rgba(0,0,0, 0.16)
+				@media screen and (max-width: 1199px)
+					padding: 3rem 0
 				@media screen and (max-width: 991px)
 					width: 50%
 				@media screen and (max-width: 767px)
@@ -204,6 +209,7 @@ body
 .show.copy-all
 	&:after
 		visibility: initial
+		// transition: ease-in-out
 		animation: upupandaway 5s infinite
 		transfom: translateY(0px)
 
@@ -212,4 +218,3 @@ body
 		transfom: translateY(0px)
 	100%
 		transfom: translateY(-1000px)
-
