@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from bs4 import BeautifulSoup as bs
 from requests import get
 from re import findall
@@ -11,7 +12,8 @@ class mp():
         pass
 
     def rotten():
-        source = get('''https://www.rottentomatoes.com/browse/in-theaters?minTomato=0
+        source = get('''https://www.rottentomatoes.com/
+                    browse/in-theaters?minTomato=0
                     &maxTomato=100
                     &minPopcorn=0
                     &maxPopcorn=100
@@ -19,8 +21,12 @@ class mp():
         soup = bs(source, 'lxml')
         js_source = soup.find_all("script")[38].prettify()
         final_json = findall('\[{.*}\]', js_source)
-        final_json = loads(final_json[0])
-        final_json = [i['title'] for i in final_json]
+        try:
+            final_json = loads(final_json[0])
+        except IndexError:
+            SystemExit('Error fetching data. Please retry.')
+        finally:
+            final_json = [i['title'] for i in final_json]
 
         return final_json
 
@@ -35,7 +41,6 @@ class mp():
 
     def in_theaters(site=""):
         site = site.lower()
-
         if site == "imdb":
             return mp.imdb()
         if site in ["rt", "rottentomatoes", "rotten tomatoes"]:
@@ -97,12 +102,16 @@ class mp():
                             print(movie[key])
                         except KeyError:
                             pass
+                        except TypeError:
+                            pass
                     elif printer == True:
-                        print(movie)
+                        print(str(movie).encode('ASCII', "ignore"))
                     elif printer == False and key != "":
                         try:
                             items.append(movie[key])
                         except KeyError:
+                            pass
+                        except TypeError:
                             pass
                     else:
                         items.append(movie)
@@ -113,5 +122,12 @@ class mp():
             raise SystemExit("Please use a [ list ] or { set }!")
 
     def query(key="", the_site=""):
+        if key == "":
+            raise SystemExit('query() requires a key')
         the_query = mp.display(mp.in_theaters(site=the_site), key=key)
         return the_query
+
+    def sorter(data):
+        keys = list(data)
+        for i in keys:
+            print(f'{i}: {data[i]}')
