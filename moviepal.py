@@ -4,9 +4,10 @@ from requests import get
 from re import findall
 from json import loads
 
+
 class mp():
     url = 'http://www.omdbapi.com/'
-    parameters = {'apikey': ''}
+    parameters = {'apikey': '7256b64c'}
 
     def __init__(self):
         pass
@@ -27,7 +28,6 @@ class mp():
             SystemExit('Error fetching data. Please retry.')
         finally:
             final_json = [i['title'] for i in final_json]
-
         return final_json
 
     def imdb():
@@ -36,7 +36,6 @@ class mp():
         soup = bs(source, 'lxml')
         titles = soup.find_all('td', {"class": "overview-top"})
         titles = [i.h4.a.text[:-7].lstrip() for i in titles]
-
         return titles
 
     def in_theaters(site=""):
@@ -68,6 +67,64 @@ class mp():
     def search_id(self, key=""):
         mp.parameters['i'] = self
         return mp.requester(key)
+
+    def rotten_search(movie, key=""):
+        source = get(
+            f'https://www.rottentomatoes.com/search/?search={movie}').text
+        soup = bs(source, 'lxml')
+        rotten_results = soup.find_all('script')
+        for i in rotten_results:
+            stuff = i.text.rstrip().lstrip()
+            if stuff.startswith(
+                    "require(['jquery', 'globals', 'search-results', 'bootstrap'], function($, RT, mount)"):
+                x = findall('({.*})', stuff)[0]
+                movies = loads(x)
+                return [movie["name"] for movie in movies["movies"]]
+
+    def rotten_scraper(entry, the_year=''):
+        rotten_link = 'https://www.rottentomatoes.com/m/{}{}'
+
+        def link_mangler(entry):
+            return entry.lower().replace(" ", "_")
+
+        def the_url(year):
+            link = rotten_link.format(link_mangler(entry), year)
+            return link
+
+        def perform(source):
+            print('Connecting...')
+            the_page = source.text
+            soup = bs(the_page, 'lxml')
+            print(f'Page Title: "{soup.find("title").text}"')
+            audience_review = ''
+            rotten_rating = ''
+            try:
+                audience_review = soup.find(
+                    'div',
+                    {'class': 'audience-score'}).find(
+                    'div',
+                    {'class': 'meter-value'}).span.text
+            except AttributeError:
+                audience_review = soup.find(
+                    'div', {'class': 'audience-score'}).find('div', {'class': 'noScore'}).text
+            titles = soup.find('script', {'id': 'jsonLdSchema'}).text
+            titles = loads(titles.encode('ascii', 'ignore').decode('ascii'))
+            try:
+                rotten_rating = str(titles["aggregateRating"][
+                                    "ratingValue"]) + "%"
+            except KeyError:
+                rotten_rating = 'Tomatomete Not Available'
+            return {"AudienceRating": audience_review, "AverageRating": rotten_rating}
+
+        def get_this(year):
+            if year == '':
+                return get(the_url(year))
+            return get(the_url(f'_{year}'))
+
+        if get_this(the_year).status_code == 404:
+            raise SystemExit(
+                "That didn't seem to work. Try entering a year or a different title.")
+        return perform(get_this(the_year))
 
     def search(self, key=""):
         mp.parameters['s'] = self
