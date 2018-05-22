@@ -7,6 +7,8 @@ body
 	&--wrapper
 		height: 1000px
 		overflow: scroll
+		&::-webkit-scrollbar
+			visibility: hidden
 	&--container
 		display: flex
 		flex-direction: row
@@ -218,3 +220,4 @@ body
 		transfom: translateY(0px)
 	100%
 		transfom: translateY(-1000px)
+
