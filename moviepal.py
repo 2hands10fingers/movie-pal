@@ -68,31 +68,47 @@ class mp():
         mp.parameters['i'] = self
         return mp.requester(key)
 
-    def rotten_search(movie, key=""):
+    def rotten_search(movie, key="", printer=False):
+
         source = get(
             f'https://www.rottentomatoes.com/search/?search={movie}').text
         soup = bs(source, 'lxml')
         rotten_results = soup.find_all('script')
         for i in rotten_results:
-            stuff = i.text.rstrip().lstrip()
-            if stuff.startswith(
-                    "require(['jquery', 'globals', 'search-results', 'bootstrap'], function($, RT, mount)"):
-                x = findall('({.*})', stuff)[0]
-                movies = loads(x)
-                return [movie["name"] for movie in movies["movies"]]
+            scraped_json = i.text.rstrip().lstrip()
+            if scraped_json.startswith(
+                    ("require(['jquery', 'globals', 'search-results',",
+                        "'bootstrap'], function($, RT, mount)")):
+                movies = findall('({.*})', scraped_json)[0]
+                movies = loads(movies)
 
-    def rotten_scraper(entry, the_year=''):
-        rotten_link = 'https://www.rottentomatoes.com/m/{}{}'
+                if key == 'print':
+                    printer = True
+
+                if key == 'verbose':
+                    links = [i["url"] for i in movies["movies"]]
+                    for url in links:
+                        mp.rotten_scraper(url, key='slug')
+
+                if printer == True:
+                    return mp.super_sort(movies)
+                return movies
+
+    def rotten_scraper(entry, the_year='', key=''):
+        rotten_link = 'https://www.rottentomatoes.com{}{}{}'
 
         def link_mangler(entry):
             return entry.lower().replace(" ", "_")
 
         def the_url(year):
-            link = rotten_link.format(link_mangler(entry), year)
+
+            if key == 'slug':
+                link = rotten_link.format(entry, '', '')
+            else:
+                link = rotten_link.format('/', link_mangler(entry), year)
             return link
 
         def perform(source):
-            print('Connecting...')
             the_page = source.text
             soup = bs(the_page, 'lxml')
             print(f'Page Title: "{soup.find("title").text}"')
@@ -106,15 +122,23 @@ class mp():
                     {'class': 'meter-value'}).span.text
             except AttributeError:
                 audience_review = soup.find(
-                    'div', {'class': 'audience-score'}).find('div', {'class': 'noScore'}).text
+                    'div', {'class': 'audience-score'}).find(
+                        'div', {'class': 'noScore'}).text
+
             titles = soup.find('script', {'id': 'jsonLdSchema'}).text
             titles = loads(titles.encode('ascii', 'ignore').decode('ascii'))
             try:
-                rotten_rating = str(titles["aggregateRating"][
-                                    "ratingValue"]) + "%"
+                rotten_rating = str(
+                    titles["aggregateRating"]["ratingValue"]) + "%"
             except KeyError:
-                rotten_rating = 'Tomatomete Not Available'
-            return {"AudienceRating": audience_review, "AverageRating": rotten_rating}
+                rotten_rating = 'Tomatometer Not Available'
+
+            the_ratings = {"AudienceRating": audience_review,
+                           "AverageRating": rotten_rating}
+            if key == '':
+                return the_ratings
+            mp.sorter(the_ratings)
+            print()
 
         def get_this(year):
             if year == '':
@@ -188,3 +212,17 @@ class mp():
         keys = list(data)
         for i in keys:
             print(f'{i}: {data[i]}')
+
+    def super_sort(data, dict_key="movies"):
+        for movie in data[dict_key]:
+            print('-' * 20)
+            for k, v in movie.items():
+                if isinstance(movie[k], list):
+                    print(f'{k}:')
+                    for x in movie[k]:
+                        if isinstance(x, dict):
+
+                            for key, value in x.items():
+                                print(f'\t{key}: {value}')
+                else:
+                    print(f'{k}: {v}')
