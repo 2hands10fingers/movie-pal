@@ -25,7 +25,7 @@ args = parser.parse_args()
 
 
 def main():
-    print("Processing arguments...")
+    print("Processing arguments...\n")
     if args.key is None:
         args.key = ''
     if args.search:
@@ -48,7 +48,8 @@ def main():
     if args.rotten_score:
         mp.sorter(mp.rotten_scraper(args.rotten_score, the_year=args.key))
     if args.rotten_search:
-        print(mp.rotten_search(args.rotten_search))
+        mp.rotten_search(args.rotten_search, key=args.key, printer=False)
+        print('\nSearch Complete!')
 
 
 if __name__ == '__main__':
