@@ -38,12 +38,33 @@ class mp():
         titles = [i.h4.a.text[:-7].lstrip() for i in titles]
         return titles
 
-    def in_theaters(site=""):
-        site = site.lower()
-        if site == "imdb":
+    def metac():
+        ua_one = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
+        ua_two = 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+        headers = {
+
+            'User-Agent': ua_one + ua_two}
+        source = get(
+            'http://www.metacritic.com/browse/movies/release-date/theaters/metascore', headers=headers).text
+        soup = bs(source, 'lxml')
+        imdb_movies = soup.find_all(
+            'div', {'class': 'browse_list_wrapper wide'})
+
+        titles_list = []
+        for i in imdb_movies:
+            scraped_titles = i.find_all('div', {'class': 'title'})
+            titles = [title.text.rstrip().lstrip() for title in scraped_titles]
+            titles_list.append(titles)
+        return sum(titles_list, [])
+
+    def in_theaters(key=""):
+        site = key.lower()
+        if key == "imdb":
             return mp.imdb()
-        if site in ["rt", "rottentomatoes", "rotten tomatoes"]:
+        if key in ["rt", "rottentomatoes", "rotten tomatoes"]:
             return mp.rotten()
+        if key in ['meta', 'metac', 'metacritic', 'mtc']:
+            return mp.metac()
 
         return mp.merged_titles()
 
@@ -52,11 +73,16 @@ class mp():
         movie = rqst
         if key == "":
             return movie
-        return movie[key]
+        try:
+            return movie[key]
+        except KeyError:
+            raise SystemExit(f'That key doesn\'t seem available.\n Try any of these keys:\n\n{list(movie.keys())}')
 
     def merged_titles():
         tomatoes = mp.rotten()
         for i in mp.imdb():
+            tomatoes.append(i)
+        for i in mp.metac():
             tomatoes.append(i)
         return set(tomatoes)
 
@@ -147,7 +173,7 @@ class mp():
 
         if get_this(the_year).status_code == 404:
             raise SystemExit(
-                "That didn't seem to work. Try entering a year or a different title.")
+                "404 ERROR: \nThat didn't seem to work. Try entering a year or a different title.")
         return perform(get_this(the_year))
 
     def search(self, key=""):
@@ -156,7 +182,8 @@ class mp():
         movie = rqst.json()["Search"]
 
         if key == "":
-            return movie
+            # return mp.sorter(movie[0])
+            return mp.key_loop(movie)
 
         items = []
         for i in movie:
@@ -165,7 +192,7 @@ class mp():
             except KeyError:
                 raise SystemExit(f'"{key}" is not an available key.',
                                  '\nTry: "Poster", "Title", "imdbID", or "Year"\n')
-        return items
+        return mp.looper(items)
 
     def display(self, printer=False, key=""):
         if isinstance(self, (list, set)):
@@ -186,7 +213,9 @@ class mp():
                         except TypeError:
                             pass
                     elif printer == True:
-                        print(str(movie).encode('ASCII', "ignore"))
+                        print(str(movie).encode(
+                            'ASCII', "ignore").decode('ascii'))
+                        print()
                     elif printer == False and key != "":
                         try:
                             items.append(movie[key])
@@ -208,21 +237,40 @@ class mp():
         the_query = mp.display(mp.in_theaters(site=the_site), key=key)
         return the_query
 
-    def sorter(data):
-        keys = list(data)
+    def sorter(self):
+        keys = list(self)
         for i in keys:
-            print(f'{i}: {data[i]}')
+            print(f'{i}: {self[i]}')
+
+    def looper(self):
+        for i in self:
+            if isinstance(i, dict):
+                mp.key_loop(i)
+            else:
+                for i in self:
+                    print(i)
+
+    def key_loop(self):
+        for i in self:
+            for key, value in i.items():
+                print(f'{key}: {value}')
+            print()
 
     def super_sort(data, dict_key="movies"):
         for movie in data[dict_key]:
             print('-' * 20)
             for k, v in movie.items():
                 if isinstance(movie[k], list):
-                    print(f'{k}:')
+                    if k == 'castItems':
+                        print('Cast:')
+                    else:
+                        print(f'{k}:')
                     for x in movie[k]:
                         if isinstance(x, dict):
-
                             for key, value in x.items():
-                                print(f'\t{key}: {value}')
+                                if key == "url":
+                                    print(f'\t\t{key}: https://rottentomatoes.com{value}')
+                                else:
+                                    print(f'\t{key}: {value}')
                 else:
                     print(f'{k}: {v}')

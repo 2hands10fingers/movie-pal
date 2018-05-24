@@ -20,6 +20,9 @@ parser.add_argument("-rtscore", "--rotten_score", type=str,
                     help="Tries to scrapes a Rotten Tomatoes page for a given title")
 parser.add_argument("-rtn", '--rotten_search', type=str,
                     help="Search Rotten Tomatoes to see available titles")
+parser.add_argument("-it", "--in_theaters", action="store_true",
+                    help=("Displays information about all movies in theaters.",
+                          " Limit it to the site by setting key to rt, imdb, or meta"))
 
 args = parser.parse_args()
 
@@ -50,6 +53,9 @@ def main():
     if args.rotten_search:
         mp.rotten_search(args.rotten_search, key=args.key, printer=False)
         print('\nSearch Complete!')
+    if args.in_theaters:
+        x = mp.display(mp.in_theaters(key=args.key))
+        mp.key_loop(x)
 
 
 if __name__ == '__main__':

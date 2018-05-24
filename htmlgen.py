@@ -12,16 +12,14 @@ class HtmlGen():
 
     def imgcheck(image, title):
         if image == 'N/A':
-            return (f''' 
-                    <img src="img/popcorn.png" alt="{title}">')
-                    ''')
+            return (f'<img src="img/popcorn.png" alt="{title}">')
         return (f'<img src="{image}" alt="{title}">')
 
     with open('index.html', 'w') as file:
         print('Creating HTML Header')
         file.write(f'''
         <html>
-        	<head>
+            <head>
                 <script
                     src="https://code.jquery.com/jquery-3.3.1.min.js"
                     integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -34,30 +32,31 @@ class HtmlGen():
                     type="text/javascript"
                     src="js/copydata.js"
                     ></script>
-        		<link
-        			href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
-        			rel="stylesheet"
+                <link
+                    href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+                    rel="stylesheet"
                     integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
-        			crossorigin="anonymous">
-        		<link
-        			rel="stylesheet"
-        			href="https://use.fontawesome.com/releases/v5.0.13/css/all.css"
-        			integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
-        			crossorigin="anonymous">
-        		<link
-        			href="https://fonts.googleapis.com/css?family=Source+Sans+Pro"
-        			rel="stylesheet">
-        		<link
-        			rel="stylesheet"
-        			href="styles/main.css">
-        	</head>
-        	<body>
-        		<div class="movies--wrapper">
-        			<div class="movies--container container">
-        		    	''')
-
+                    crossorigin="anonymous">
+                <link
+                    rel="stylesheet"
+                    href="https://use.fontawesome.com/releases/v5.0.13/css/all.css"
+                    integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
+                    crossorigin="anonymous">
+                <link
+                    href="https://fonts.googleapis.com/css?family=Source+Sans+Pro"
+                    rel="stylesheet">
+                <link
+                    rel="stylesheet"
+                    href="styles/main.css">
+            </head>
+            <body>
+                <div class="movies--wrapper">
+                    <div class="movies--container container">
+                        ''')
+        print('Requesting film entities...')
         movies = mp.display(mp.query(key="Title"))
         print('Creating film entities...')
+
         for movie in movies:
 
             try:
