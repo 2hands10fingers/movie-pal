@@ -1,0 +1,6 @@
+// Settings.
+
+// Replace KEYHERE with your API key. Leave quotations. ex: "3sd9sd8a" 
+{
+	"omdb_api_key": "KEYHERE"
+}

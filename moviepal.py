@@ -2,15 +2,20 @@
 from bs4 import BeautifulSoup as bs
 from requests import get
 from re import findall
-from json import loads
+from json import loads, load
 
 
 class mp():
+
     url = 'http://www.omdbapi.com/'
-    parameters = {'apikey': '7256b64c'}
+    parameters = {'apikey': ''}
 
     def __init__(self):
         pass
+
+    def api():
+        with open('config.json', 'r') as keyfile:
+            mp.parameters['apikey'] = load(keyfile)["omdb_api_key"]
 
     def rotten():
         source = get('''https://www.rottentomatoes.com/
@@ -182,7 +187,6 @@ class mp():
         movie = rqst.json()["Search"]
 
         if key == "":
-            # return mp.sorter(movie[0])
             return mp.key_loop(movie)
 
         items = []
@@ -274,3 +278,5 @@ class mp():
                                     print(f'\t{key}: {value}')
                 else:
                     print(f'{k}: {v}')
+
+mp.api()
