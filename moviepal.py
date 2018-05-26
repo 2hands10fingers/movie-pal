@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup as bs
 from requests import get
 from re import findall
 from json import loads, load
+from time import sleep
+import webbrowser
 
 
 class mp():
@@ -15,7 +17,16 @@ class mp():
 
     def api():
         with open('config.json', 'r') as keyfile:
-            mp.parameters['apikey'] = load(keyfile)["omdb_api_key"]
+            apikey = load(keyfile)["omdb_api_key"]
+            site = 'http://www.omdbapi.com/apikey.aspx'
+            if apikey in ["KEYHERE", ""]:
+                sitevisit = input(f"API Key not found in 'config.json'.\nIt is currently: '{apikey}'.\nWoud you like to visit the site to obtain one (Y/N)? ")
+                if sitevisit in ['Yes', 'Y', 'y', 'yes', 'Of Course']:
+                    webbrowser.open(site)
+                else:
+                    raise SystemExit(f'ERROR: OMDB API Key Missing.\n Please visit: {site}')
+
+            mp.parameters['apikey'] = apikey
 
     def rotten():
         source = get('''https://www.rottentomatoes.com/
@@ -46,9 +57,7 @@ class mp():
     def metac():
         ua_one = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
         ua_two = 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
-        headers = {
-
-            'User-Agent': ua_one + ua_two}
+        headers = {'User-Agent': ua_one + ua_two}
         source = get(
             'http://www.metacritic.com/browse/movies/release-date/theaters/metascore', headers=headers).text
         soup = bs(source, 'lxml')
@@ -63,18 +72,22 @@ class mp():
         return sum(titles_list, [])
 
     def in_theaters(key=""):
-        site = key.lower()
+        key = key.lower()
         if key == "imdb":
             return mp.imdb()
         if key in ["rt", "rottentomatoes", "rotten tomatoes"]:
             return mp.rotten()
         if key in ['meta', 'metac', 'metacritic', 'mtc']:
             return mp.metac()
-
-        return mp.merged_titles()
+        all_titles = mp.merged_titles()
+        print(f'Requesting {len(all_titles)} items...')
+        return
 
     def requester(key=""):
         rqst = get(mp.url, params=mp.parameters).json()
+        print(rqst)
+        print()
+        sleep(0.05)
         movie = rqst
         if key == "":
             return movie
@@ -238,7 +251,7 @@ class mp():
     def query(key="", the_site=""):
         if key == "":
             raise SystemExit('query() requires a key')
-        the_query = mp.display(mp.in_theaters(site=the_site), key=key)
+        the_query = mp.display(mp.in_theaters(key=key), key=key)
         return the_query
 
     def sorter(self):
@@ -251,8 +264,7 @@ class mp():
             if isinstance(i, dict):
                 mp.key_loop(i)
             else:
-                for i in self:
-                    print(i)
+                print(i)
 
     def key_loop(self):
         for i in self:

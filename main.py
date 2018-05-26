@@ -32,7 +32,7 @@ def main():
     if args.key is None:
         args.key = ''
     if args.search:
-        print(mp.search(args.search, key=args.key))
+        mp.search(args.search, key=args.key)
     if args.search_title:
         movie = mp.search_title(args.search_title, key=args.key)
         if args.key == '':
