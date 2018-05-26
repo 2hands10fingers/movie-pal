@@ -2,6 +2,8 @@
 from bs4 import BeautifulSoup as bs
 from requests import get
 from re import findall
+import re
+import string
 from json import loads, load
 from time import sleep
 import webbrowser
@@ -24,9 +26,43 @@ class mp():
                 if sitevisit in ['Yes', 'Y', 'y', 'yes', 'Of Course']:
                     webbrowser.open(site)
                 else:
-                    raise SystemExit(f'ERROR: OMDB API Key Missing.\n Please visit: {site}')
+                    raise SystemExit(f'\nERROR: OMDB API Key Missing.\nPlease visit: {site}')
 
             mp.parameters['apikey'] = apikey
+
+    def boxoffice():
+        '''
+        Not going to lie. The output of this is gross. Needs adjusting.
+        '''
+        ua_one = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
+        ua_two = 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+        headers = {'User-Agent': ua_one + ua_two}
+        source = get(
+            'http://www.boxofficemojo.com/daily/chart/?view=7day&sortdate=2018-05-25&p=.htm', headers=headers).text
+        soup = bs(source, 'lxml')
+        movies = soup.find_all('td', {'bgcolor': re.compile(r".*")})
+        abc = [x for x in string.ascii_uppercase]
+        nums = [x for x in string.digits]
+
+        for i in movies:
+
+            if i.text in ['N/A', '-']:
+                continue
+            if i.text not in abc or i.text not in nums:
+                title = findall('[A-Z\d][A-Z]+', i.text)
+
+                print()
+                print('- - -' * 10)
+                print(' '.join(title)[:-1].rstrip().lstrip())
+                if i.text.startswith('$'):
+                    print(i.text)
+
+                if len(title) == 0:
+                    pass
+            if i.text not in []:
+                pass
+            if i.text.startswith(' '):
+                pass
 
     def rotten():
         source = get('''https://www.rottentomatoes.com/

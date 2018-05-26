@@ -23,6 +23,8 @@ parser.add_argument("-rtn", '--rotten_search', type=str,
 parser.add_argument("-it", "--in_theaters", action="store_true",
                     help=("Displays information about all movies in theaters.",
                           " Limit it to the site by setting key to rt, imdb, or meta"))
+parser.add_argument("-box", "--boxoffice", action="store_true",
+                    help=("Displays boxoffice numbers for all movies in theaters."))
 
 args = parser.parse_args()
 
@@ -56,6 +58,8 @@ def main():
     if args.in_theaters:
         x = mp.display(mp.in_theaters(key=args.key))
         mp.key_loop(x)
+    if args.boxoffice:
+        mp.boxoffice()
 
 
 if __name__ == '__main__':
