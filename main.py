@@ -30,36 +30,37 @@ args = parser.parse_args()
 
 
 def main():
+    movie_pal = mp()
     print("Processing arguments...\n")
     if args.key is None:
         args.key = ''
     if args.search:
-        mp.search(args.search, key=args.key)
+        movie_pal.search(args.search, key=args.key)
     if args.search_title:
-        movie = mp.search_title(args.search_title, key=args.key)
+        movie = movie_pal.search_title(args.search_title, key=args.key)
         if args.key == '':
-            mp.sorter(movie)
+            movie_pal.sorter(movie)
         else:
             print(movie)
 
     if args.search_id:
-        movie = mp.search_id(args.search_id, key=args.key)
+        movie = movie_pal.search_id(args.search_id, key=args.key)
         if args.key == '':
-            mp.sorter(movie)
+            movie_pal.sorter(movie)
         else:
             print(movie)
     if args.generate:
         import htmlgen
     if args.rotten_score:
-        mp.sorter(mp.rotten_scraper(args.rotten_score, the_year=args.key))
+        movie_pal.sorter(movie_pal.rotten_scraper(args.rotten_score, the_year=args.key))
     if args.rotten_search:
-        mp.rotten_search(args.rotten_search, key=args.key, printer=False)
+        movie_pal.rotten_search(args.rotten_search, key=args.key, printer=False)
         print('\nSearch Complete!')
     if args.in_theaters:
-        x = mp.display(mp.in_theaters(key=args.key))
-        mp.key_loop(x)
+        x = movie_pal.display(movie_pal.in_theaters(key=args.key))
+        movie_pal.key_loop(x)
     if args.boxoffice:
-        mp.boxoffice()
+        movie_pal.boxoffice()
 
 
 if __name__ == '__main__':
