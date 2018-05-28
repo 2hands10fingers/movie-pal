@@ -1,28 +1,47 @@
 #!/usr/bin/python3
+import re
+import webbrowser
+import json
+from re import findall
+from time import sleep
+
 from bs4 import BeautifulSoup as bs
 from requests import get
-from re import findall
-import re
-import string
-from json import loads, load
-from time import sleep
-import webbrowser
+import pandas as pd
 
+
+class EarningsCell():
+    def __init__(self, match):
+        self.daily_gross = match['daily_gross']
+        self.percent_change = match['percent_change']
+        self.average = match['average']
+        self.total_gross = match['total_gross']
+        self.day_number = match['day_number']
+
+    def __str__(self):
+        return f'Daily:{self.daily_gross} Change:{self.percent_change} Average:{self.average} Total:{self.total_gross} Day:{self.day_number}'
 
 class mp():
-
     url = 'http://www.omdbapi.com/'
     parameters = {'apikey': ''}
+
+    # TODO setting the pandas options here is really gross.
+    # TODO consider not printing right from the dataframe in boxoffice (or elsewhere)
+    pd.set_option('display.height', 1000)
+    pd.set_option('display.width', 1000)
+    pd.set_option('display.max_columns', 500)
+    pd.set_option('display.max_colwidth', 500)
 
     def __init__(self):
         pass
 
-    def api():
+    def api(self):
         with open('config.json', 'r') as keyfile:
-            apikey = load(keyfile)["omdb_api_key"]
+            apikey = json.load(keyfile)["omdb_api_key"]
             site = 'http://www.omdbapi.com/apikey.aspx'
             if apikey in ["KEYHERE", ""]:
-                sitevisit = input(f"API Key not found in 'config.json'.\nIt is currently: '{apikey}'.\nWoud you like to visit the site to obtain one (Y/N)? ")
+                sitevisit = input(
+                    f"API Key not found in 'config.json'.\nIt is currently: '{apikey}'.\nWoud you like to visit the site to obtain one (Y/N)? ")
                 if sitevisit in ['Yes', 'Y', 'y', 'yes', 'Of Course']:
                     webbrowser.open(site)
                 else:
@@ -30,41 +49,54 @@ class mp():
 
             mp.parameters['apikey'] = apikey
 
-    def boxoffice():
-        '''
-        Not going to lie. The output of this is gross. Needs adjusting.
-        '''
-        ua_one = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
-        ua_two = 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
-        headers = {'User-Agent': ua_one + ua_two}
-        source = get(
-            'http://www.boxofficemojo.com/daily/chart/?view=7day&sortdate=2018-05-25&p=.htm', headers=headers).text
-        soup = bs(source, 'lxml')
-        movies = soup.find_all('td', {'bgcolor': re.compile(r".*")})
-        abc = [x for x in string.ascii_uppercase]
-        nums = [x for x in string.digits]
+    def _convert_title(self, content):
+        match = re.match(r'(?P<title>[A-Z0-9\.\?\-",\(\)\s:]+)[A-Z]{1}.*', content)
+        return match['title'].title() if match else content
 
-        for i in movies:
+    def _convert_earnings_cell(self, content):
+        match = re.match(
+            r'(?P<daily_gross>\$[\S]*) (?P<percent_change>--|[+-].*%) / (?P<average>\$[^\$]+)(?P<total_gross>\$[^\$]+) / (?P<day_number>\d{1,3})',
+            content)
+        return EarningsCell(match) if match else content
 
-            if i.text in ['N/A', '-']:
-                continue
-            if i.text not in abc or i.text not in nums:
-                title = findall('[A-Z\d][A-Z]+', i.text)
+    def _convert_date_col_header(self, content):
+        match = re.match(r'.*(?P<date>\d\d?/\d\d?).*', content)
+        return match['date'] if match else content
 
-                print()
-                print('- - -' * 10)
-                print(' '.join(title)[:-1].rstrip().lstrip())
-                if i.text.startswith('$'):
-                    print(i.text)
 
-                if len(title) == 0:
-                    pass
-            if i.text not in []:
-                pass
-            if i.text.startswith(' '):
-                pass
+    def boxoffice(self):
+        # TODO stop hard coding the URL
+        url = 'http://www.boxofficemojo.com/daily/chart/?view=7day&sortdate=2018-05-25&p=.htm'
+        converters = {
+            1: self._convert_title,
+            2: self._convert_earnings_cell,
+            3: self._convert_earnings_cell,
+            4: self._convert_earnings_cell,
+            5: self._convert_earnings_cell,
+            6: self._convert_earnings_cell,
+            7: self._convert_earnings_cell,
+            8: self._convert_earnings_cell
+        }
 
-    def rotten():
+        df = pd.read_html(io=url,
+                          header=0,
+                          match='Rank\*',
+                          skiprows=3,
+                          converters=converters)[0][:-1]
+
+        df.fillna('Not Available', inplace=True)
+
+        # Rename the column headers.
+        df.rename(mapper=self._convert_date_col_header,
+                  axis='columns',
+                  inplace=True)
+
+        # TODO decide if you want to print out more than just the current day's results
+        # TODO perhaps consider returning the dataframe or the string version of it instead of printing
+        print(df.iloc[:, :3])
+
+
+    def rotten(self):
         source = get('''https://www.rottentomatoes.com/
                     browse/in-theaters?minTomato=0
                     &maxTomato=100
@@ -75,14 +107,14 @@ class mp():
         js_source = soup.find_all("script")[38].prettify()
         final_json = findall('\[{.*}\]', js_source)
         try:
-            final_json = loads(final_json[0])
+            final_json = json.loads(final_json[0])
         except IndexError:
             SystemExit('Error fetching data. Please retry.')
         finally:
             final_json = [i['title'] for i in final_json]
         return final_json
 
-    def imdb():
+    def imdb(self):
         source = get(
             'http://www.imdb.com/movies-in-theaters/?ref_=nv_mv_inth_1').text
         soup = bs(source, 'lxml')
@@ -90,7 +122,7 @@ class mp():
         titles = [i.h4.a.text[:-7].lstrip() for i in titles]
         return titles
 
-    def metac():
+    def metac(self):
         ua_one = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
         ua_two = 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
         headers = {'User-Agent': ua_one + ua_two}
@@ -107,7 +139,7 @@ class mp():
             titles_list.append(titles)
         return sum(titles_list, [])
 
-    def in_theaters(key=""):
+    def in_theaters(self, key=""):
         key = key.lower()
         if key == "imdb":
             return mp.imdb()
@@ -119,7 +151,7 @@ class mp():
         print(f'Requesting {len(all_titles)} items...')
         return
 
-    def requester(key=""):
+    def requester(self, key=""):
         rqst = get(mp.url, params=mp.parameters).json()
         print(rqst)
         print()
@@ -132,7 +164,7 @@ class mp():
         except KeyError:
             raise SystemExit(f'That key doesn\'t seem available.\n Try any of these keys:\n\n{list(movie.keys())}')
 
-    def merged_titles():
+    def merged_titles(self):
         tomatoes = mp.rotten()
         for i in mp.imdb():
             tomatoes.append(i)
@@ -140,15 +172,15 @@ class mp():
             tomatoes.append(i)
         return set(tomatoes)
 
-    def search_title(self, key=""):
+    def search_title(self, search_term, key=""):
         mp.parameters['t'] = self
         return mp.requester(key)
 
-    def search_id(self, key=""):
+    def search_id(self, search_term, key=""):
         mp.parameters['i'] = self
         return mp.requester(key)
 
-    def rotten_search(movie, key="", printer=False):
+    def rotten_search(movie, search_term, key="", printer=False):
 
         source = get(
             f'https://www.rottentomatoes.com/search/?search={movie}').text
@@ -158,9 +190,9 @@ class mp():
             scraped_json = i.text.rstrip().lstrip()
             if scraped_json.startswith(
                     ("require(['jquery', 'globals', 'search-results',",
-                        "'bootstrap'], function($, RT, mount)")):
+                     "'bootstrap'], function($, RT, mount)")):
                 movies = findall('({.*})', scraped_json)[0]
-                movies = loads(movies)
+                movies = json.loads(movies)
 
                 if key == 'print':
                     printer = True
@@ -174,7 +206,7 @@ class mp():
                     return mp.super_sort(movies)
                 return movies
 
-    def rotten_scraper(entry, the_year='', key=''):
+    def rotten_scraper(self, entry, the_year='', key=''):
         rotten_link = 'https://www.rottentomatoes.com{}{}{}'
 
         def link_mangler(entry):
@@ -203,10 +235,10 @@ class mp():
             except AttributeError:
                 audience_review = soup.find(
                     'div', {'class': 'audience-score'}).find(
-                        'div', {'class': 'noScore'}).text
+                    'div', {'class': 'noScore'}).text
 
             titles = soup.find('script', {'id': 'jsonLdSchema'}).text
-            titles = loads(titles.encode('ascii', 'ignore').decode('ascii'))
+            titles = json.loads(titles.encode('ascii', 'ignore').decode('ascii'))
             try:
                 rotten_rating = str(
                     titles["aggregateRating"]["ratingValue"]) + "%"
@@ -230,7 +262,7 @@ class mp():
                 "404 ERROR: \nThat didn't seem to work. Try entering a year or a different title.")
         return perform(get_this(the_year))
 
-    def search(self, key=""):
+    def search(self, search_term, key=""):
         mp.parameters['s'] = self
         rqst = get(mp.url, params=mp.parameters)
         movie = rqst.json()["Search"]
@@ -284,31 +316,33 @@ class mp():
         else:
             raise SystemExit("Please use a [ list ] or { set }!")
 
-    def query(key="", the_site=""):
+    def query(self, key="", the_site=""):
         if key == "":
             raise SystemExit('query() requires a key')
         the_query = mp.display(mp.in_theaters(key=key), key=key)
         return the_query
 
-    def sorter(self):
-        keys = list(self)
+    def sorter(self, iterable_to_be_sorted):
+        # TODO this doesn't sort anything??
+        keys = list(iterable_to_be_sorted)
         for i in keys:
-            print(f'{i}: {self[i]}')
+            print(f'{i}: {iterable_to_be_sorted[i]}')
 
-    def looper(self):
-        for i in self:
+    def looper(self, iterable_to_be_looped_over):
+        for i in iterable_to_be_looped_over:
             if isinstance(i, dict):
                 mp.key_loop(i)
             else:
                 print(i)
 
-    def key_loop(self):
-        for i in self:
+    def key_loop(self, dict_to_be_looped_over):
+        for i in dict_to_be_looped_over:
             for key, value in i.items():
                 print(f'{key}: {value}')
             print()
 
-    def super_sort(data, dict_key="movies"):
+    def super_sort(self, data, dict_key="movies"):
+        # TODO this doesn't sort anything??
         for movie in data[dict_key]:
             print('-' * 20)
             for k, v in movie.items():
@@ -327,4 +361,4 @@ class mp():
                 else:
                     print(f'{k}: {v}')
 
-mp.api()
+
