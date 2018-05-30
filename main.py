@@ -5,8 +5,7 @@ from moviepal import mp
 parser = argparse.ArgumentParser(
     description="CLI for generating moviea data from IMDB and Rotten Tomatoes")
 parser.add_argument("-s", "--search", type=str,
-                    help="""Search any movie title.
-                    Add a 'key' argument to find specific datapoint i.e. Ratings, Title, Plot, etc.""")
+                    help="""Search any movie title. Add a 'key' argument to find specific datapoint i.e. Ratings, Title, Plot, etc.""")
 parser.add_argument("-k", "--key",
                     type=str, help="Use this to search for a specific datapoint when searching")
 parser.add_argument("-t", "--search_title", type=str,

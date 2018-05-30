@@ -117,12 +117,16 @@ class mp():
             return mp.metac()
         all_titles = mp.merged_titles()
         print(f'Requesting {len(all_titles)} items...')
-        return
+        return all_titles
 
     def requester(key=""):
-        rqst = get(mp.url, params=mp.parameters).json()
-        print(rqst)
-        print()
+        headers = {'ContentType': 'application/json'}
+        rqst = ''
+        try:
+            rqst = get(mp.url, params=mp.parameters).json()
+        except ValueError:
+            pass
+
         sleep(0.05)
         movie = rqst
         if key == "":
@@ -149,9 +153,8 @@ class mp():
         return mp.requester(key)
 
     def rotten_search(movie, key="", printer=False):
-
-        source = get(
-            f'https://www.rottentomatoes.com/search/?search={movie}').text
+        url = f'https://www.rottentomatoes.com/search/?search={movie}'
+        source = get(url).text
         soup = bs(source, 'lxml')
         rotten_results = soup.find_all('script')
         for i in rotten_results:
@@ -181,19 +184,21 @@ class mp():
             return entry.lower().replace(" ", "_")
 
         def the_url(year):
-
             if key == 'slug':
-                link = rotten_link.format(entry, '', '')
+                link = rotten_link.format('/m/', entry, '')
             else:
-                link = rotten_link.format('/', link_mangler(entry), year)
+                link = rotten_link.format('/m/', link_mangler(entry), year)
             return link
 
         def perform(source):
             the_page = source.text
             soup = bs(the_page, 'lxml')
-            print(f'Page Title: "{soup.find("title").text}"')
             audience_review = ''
             rotten_rating = ''
+
+            print('-' * 20)
+            print(f'Page Title: "{soup.find("title").text}"\n')
+
             try:
                 audience_review = soup.find(
                     'div',
@@ -256,7 +261,7 @@ class mp():
                 except KeyError:
                     pass
                 finally:
-                    if movie["Response"] == 'False':
+                    if movie["Response"] != 'True':
                         pass
                     if printer == True and key != "":
                         try:

@@ -10,16 +10,20 @@ class HtmlGen():
     def __init__(self):
         pass
 
+    def ascii_clean(the_string):
+        return the_string.encode('ascii', 'ignore').decoode('ascii')
+
     def imgcheck(image, title):
         if image == 'N/A':
             return (f'<img src="img/popcorn.png" alt="{title}">')
         return (f'<img src="{image}" alt="{title}">')
 
-    with open('index.html', 'w') as file:
+    with open('ui/index.html', 'w') as file:
         print('Creating HTML Header')
         file.write(f'''
         <html>
             <head>
+                <title>MoviePal - UI</title>
                 <script
                     src="https://code.jquery.com/jquery-3.3.1.min.js"
                     integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -53,12 +57,10 @@ class HtmlGen():
                 <div class="movies--wrapper">
                     <div class="movies--container container">
                         ''')
-        print('Requesting film entities...')
+        print('Gathering film titles...')
         movies = mp.display(mp.query(key="Title"))
         print('Creating film entities...')
-
         for movie in movies:
-
             try:
                 (title, ratings, boxoffice, genre,
                  _type, poster, runtime, plot, imdbid) = (
@@ -74,22 +76,24 @@ class HtmlGen():
 
                 )
                 rotten, imdb, mtc = '', '', ''
-
-                file.write(f'''<div class="movie--container">
-                            <a target="_blank" href="https://imdb.com/title/{imdbid}">
-                                <h3>{title}</h3>
-                            </a>
-                            <div class="movie--data">
-                                <div class="movie--left">
-                                    <a target="_blank" href="https://imdb.com/title/{imdbid}">
-                                    {imgcheck(poster, title)}
-                                    </a>
-                                </div>
-                            <div class="movie--right">
-                            <div class="boxoffice">
-                                    <span class="boxoffice--icon far fa-money-bill-alt"></span>
-                                    <span class="boxoffice--result">{boxoffice}</span>
-                                </div>''')
+                try:
+                    file.write(f'''<div class="movie--container">
+                                <a target="_blank" href="https://imdb.com/title/{imdbid}">
+                                    <h3>{title}</h3>
+                                </a>
+                                <div class="movie--data">
+                                    <div class="movie--left">
+                                        <a target="_blank" href="https://imdb.com/title/{imdbid}">
+                                        {imgcheck(poster, title)}
+                                        </a>
+                                    </div>
+                                <div class="movie--right">
+                                <div class="boxoffice">
+                                        <span class="boxoffice--icon far fa-money-bill-alt"></span>
+                                        <span class="boxoffice--result">{boxoffice}</span>
+                                    </div>''')
+                except UnicodeEncodeError:
+                    pass
 
                 for i in ratings:
 
@@ -137,9 +141,11 @@ class HtmlGen():
                         </div>
                         </div>''')
             except KeyError:
-                continue
+                pass
+            except UnicodeEncodeError:
+                pass
 
         file.write(f'</div></div><div class="copy-all"><span>Copy All</span></div></body></html>')
 
 print('Enjoy!')
-webbrowser.open('file://' + os.path.abspath('index.html'))
+webbrowser.open('file://' + os.path.abspath('ui/index.html'))
