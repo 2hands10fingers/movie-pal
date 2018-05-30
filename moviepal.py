@@ -30,15 +30,18 @@ class mp():
 
             mp.parameters['apikey'] = apikey
 
+    def headers():
+        ua_one = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
+        ua_two = 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+        headers = {'User-Agent': ua_one + ua_two}
+        return headers
+
     def boxoffice():
         '''
         Not going to lie. The output of this is gross. Needs adjusting.
         '''
-        ua_one = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
-        ua_two = 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
-        headers = {'User-Agent': ua_one + ua_two}
         source = get(
-            'http://www.boxofficemojo.com/daily/chart/?view=7day&sortdate=2018-05-25&p=.htm', headers=headers).text
+            'http://www.boxofficemojo.com/daily/chart/?view=7day&sortdate=2018-05-25&p=.htm', headers=mp.headers).text
         soup = bs(source, 'lxml')
         movies = soup.find_all('td', {'bgcolor': re.compile(r".*")})
         abc = [x for x in string.ascii_uppercase]
@@ -91,11 +94,8 @@ class mp():
         return titles
 
     def metac():
-        ua_one = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
-        ua_two = 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
-        headers = {'User-Agent': ua_one + ua_two}
         source = get(
-            'http://www.metacritic.com/browse/movies/release-date/theaters/metascore', headers=headers).text
+            'http://www.metacritic.com/browse/movies/release-date/theaters/metascore', headers=mp.headers()).text
         soup = bs(source, 'lxml')
         imdb_movies = soup.find_all(
             'div', {'class': 'browse_list_wrapper wide'})
@@ -106,6 +106,20 @@ class mp():
             titles = [title.text.rstrip().lstrip() for title in scraped_titles]
             titles_list.append(titles)
         return sum(titles_list, [])
+
+    def meta_search(search_term, key=''):
+
+        if key == '':
+            url = f'http://www.metacritic.com/search/movie/{search_term}/results?sort=score'
+        else:
+            url = f'http://www.metacritic.com/search/movie/{search_term}/results?sort={key}'
+        source = get(url, headers=mp.headers()).text
+        soup = bs(source, 'lxml')
+        rotten_results = soup.find_all('div', {'class': 'main_stats'})
+
+        for i in rotten_results:
+            print(f'{i.h3.text.lstrip().rstrip()}: {i.span.text}')
+            print()
 
     def in_theaters(key=""):
         key = key.lower()
@@ -333,3 +347,4 @@ class mp():
                     print(f'{k}: {v}')
 
 mp.api()
+mp.meta_search('The Godfather', key="recent")
