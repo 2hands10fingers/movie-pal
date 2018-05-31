@@ -7,6 +7,7 @@ import string
 from json import loads, load
 from time import sleep
 import webbrowser
+import os
 
 
 class mp():
@@ -18,7 +19,7 @@ class mp():
         pass
 
     def api():
-        with open('config.json', 'r') as keyfile:
+        with open(os.path.abspath('movie-pal/config.json'), 'r') as keyfile:
             apikey = load(keyfile)["omdb_api_key"]
             site = 'http://www.omdbapi.com/apikey.aspx'
             if apikey in ["KEYHERE", ""]:
@@ -41,7 +42,7 @@ class mp():
         Not going to lie. The output of this is gross. Needs adjusting.
         '''
         source = get(
-            'http://www.boxofficemojo.com/daily/chart/?view=7day&sortdate=2018-05-25&p=.htm', headers=mp.headers).text
+            'http://www.boxofficemojo.com/daily/chart/', headers=mp.headers).text
         soup = bs(source, 'lxml')
         movies = soup.find_all('td', {'bgcolor': re.compile(r".*")})
         abc = [x for x in string.ascii_uppercase]
