@@ -10,8 +10,8 @@ class HtmlGen():
     def __init__(self):
         pass
 
-    def ascii_clean(the_string):
-        return the_string.encode('ascii', 'ignore').decoode('ascii')
+    def ascii_clean(self):
+        return self.encode('ascii', 'ignore').decoode('ascii')
 
     def imgcheck(image, title):
         if image == 'N/A':
@@ -27,6 +27,11 @@ class HtmlGen():
                 <script
                     src="https://code.jquery.com/jquery-3.3.1.min.js"
                     integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+                    crossorigin="anonymous">
+                </script>
+                <script 
+                    src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" 
+                    integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" 
                     crossorigin="anonymous">
                 </script>
                 <script 
@@ -145,7 +150,42 @@ class HtmlGen():
             except UnicodeEncodeError:
                 pass
 
-        file.write(f'</div></div><div class="copy-all"><span>Copy All</span></div></body></html>')
+        file.write(f'''</div></div>
+                        <div data-toggle="modal" data-target="#myModal" class="copy-all">
+                        <span>Copy All</span>
+                        </div>
+                        <div class="modal fade" id="myModal" tabindex="-1" role="dialog">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Get Film Info</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    
+                                    <input id="search">
+                                    <button type="button" onclick="inputGrabber()"><i class="fas fa-search"></i></button>
+                                    <input class="searchinput" type="checkbox"><span class="discover">Discover</span></radio>
+                                
+                                    
+                                    <script src="../config.js"></script>
+                                    <script src="../search.js" type="text/javascript"></script>
+                                
+                                    </input>
+                                
+                                    <div class="data">
+                                    <!-- data here -->
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                   <div class="footer-deco"></div>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+        </body></html>''')
 
 print('Enjoy!')
 webbrowser.open('file://' + os.path.abspath('ui/index.html'))

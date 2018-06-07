@@ -1,4 +1,10 @@
 #!/usr/bin/python3
+# //   ____________________   //
+# //    { moviepal projet }   //
+# //   --------------------   //
+# //   by antonio nogueras    //
+
+import os
 from bs4 import BeautifulSoup as bs
 from requests import get
 from re import findall
@@ -7,8 +13,6 @@ import string
 from json import loads, load
 from time import sleep
 import webbrowser
-import os
-
 
 class mp():
 
@@ -19,9 +23,10 @@ class mp():
         pass
 
     def api():
-        with open(os.path.abspath('movie-pal/config.json'), 'r') as keyfile:
-            apikey = load(keyfile)["omdb_api_key"]
+        with open(os.path.abspath('config.js'), 'r') as keyfile:
+            apikey = loads(findall('config = (.*)', keyfile.read())[0])["config"]["key"] #Grabs key from js file
             site = 'http://www.omdbapi.com/apikey.aspx'
+            
             if apikey in ["KEYHERE", ""]:
                 sitevisit = input(f"API Key not found in 'config.json'.\nIt is currently: '{apikey}'.\nWoud you like to visit the site to obtain one (Y/N)? ")
                 if sitevisit in ['Yes', 'Y', 'y', 'yes', 'Of Course']:
@@ -42,7 +47,10 @@ class mp():
         Not going to lie. The output of this is gross. Needs adjusting.
         '''
         source = get(
+        
+        
             'http://www.boxofficemojo.com/daily/chart/', headers=mp.headers).text
+        # print(source)
         soup = bs(source, 'lxml')
         movies = soup.find_all('td', {'bgcolor': re.compile(r".*")})
         abc = [x for x in string.ascii_uppercase]
@@ -135,7 +143,7 @@ class mp():
         return all_titles
 
     def requester(key=""):
-        headers = {'ContentType': 'application/json'}
+        print(mp.url)
         rqst = ''
         try:
             rqst = get(mp.url, params=mp.parameters).json()
@@ -144,6 +152,7 @@ class mp():
 
         sleep(0.05)
         movie = rqst
+
         if key == "":
             return movie
         try:

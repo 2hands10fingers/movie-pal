@@ -5,7 +5,7 @@ from moviepal import mp
 parser = argparse.ArgumentParser(
     description="CLI for generating moviea data from IMDB and Rotten Tomatoes")
 parser.add_argument("-s", "--search", type=str,
-                    help="""Search any movie title. Add a 'key' argument to find specific datapoint i.e. Ratings, Title, Plot, etc.""")
+                    help="Search any movie title. Add a 'key' argument to find specific datapoint i.e. Ratings, Title, Plot, etc.")
 parser.add_argument("-k", "--key",
                     type=str, help="Use this to search for a specific datapoint when searching")
 parser.add_argument("-t", "--search_title", type=str,
@@ -52,7 +52,7 @@ def main():
     if args.rotten_score:
         mp.sorter(mp.rotten_scraper(args.rotten_score, the_year=args.key))
     if args.rotten_search:
-        mp.rotten_search(args.rotten_search, key=args.key, printer=False)
+        mp.rotten_search(args.rotten_search, key=args.key, printer=True)
         print('\nSearch Complete!')
     if args.in_theaters:
         x = mp.display(mp.in_theaters(key=args.key))
