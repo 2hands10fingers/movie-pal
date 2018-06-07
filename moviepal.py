@@ -143,14 +143,14 @@ class mp():
         return all_titles
 
     def requester(key=""):
-        print(mp.url)
+        print('Request sent!')
         rqst = ''
         try:
             rqst = get(mp.url, params=mp.parameters).json()
         except ValueError:
             pass
 
-        sleep(0.05)
+        # sleep(0.05)
         movie = rqst
 
         if key == "":

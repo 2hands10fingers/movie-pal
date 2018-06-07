@@ -48,12 +48,13 @@
               }
                 
             } else if (x === "Title")  {
-              theBuilder += '<p style="font-size:2rem;text-align:center;">' + items[i][x] + '</p>';
+              theBuilder += '<p style="margin-bottom:0;font-size:2rem;text-align:center;">' + items[i][x] + '</p>';
             } else if (x === "Year")  {
               theBuilder += '<p style="text-align:center;">' + items[i][x] + '</p>';
             } else if (x === "imdbID")  {
-              theBuilder += '<a href="https://www.imdb.com/title/' + items[i][x] + '" >Visit Site</a> <span onclick=idSearch("'+ items[i][x] +'")>Get Data</span> </p>';
-
+              theBuilder += '<div class="databuttons"><a target="_blank" href="https://www.imdb.com/title/' + items[i][x] + '" >Visit Site</a> <span onclick=idSearch("'+ items[i][x] +'")>Get Data</span></div></p>';
+            } else if (x === "Type")  {
+              //pass
             } else {
               theBuilder += '<p><strong>'+ x + ":</strong> "+ items[i][x] + '</p>';
             }
