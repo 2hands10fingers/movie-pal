@@ -10,15 +10,15 @@ class HtmlGen():
     def __init__(self):
         pass
 
-    def ascii_clean(self):
-        return self.encode('ascii', 'ignore').decoode('ascii')
+    # def ascii_clean(self):
+    #     return self.encode('ascii', 'ignore').decoode('ascii')
 
-    def imgcheck(image, title):
-        if image == 'N/A':
+    def imgcheck(self, title):
+        if self == 'N/A':
             return (f'<img src="img/popcorn.png" alt="{title}">')
-        return (f'<img src="{image}" alt="{title}">')
+        return (f'<img src="{self}" alt="{title}">')
 
-    with open('ui/index.html', 'w') as file:
+    with open('ui/index.html', 'w', encoding='utf-8-sig') as file:
         print('Creating HTML Header')
         file.write(f'''
         <html>

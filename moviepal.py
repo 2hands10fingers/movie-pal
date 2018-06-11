@@ -118,9 +118,13 @@ class mp():
         return sum(titles_list, [])
 
     def meta_search(search_term, key=''):
-
+        search_keys = ['relevancy', 'rel', 'score', 'recent']
         if key == '':
             url = f'http://www.metacritic.com/search/movie/{search_term}/results?sort=score'
+        elif key not in search_keys:
+            raise SystemExit('Please make sure to use the available keys when searching', mp.looper(search_keys))
+        elif key == '':
+            mp.metac
         else:
             url = f'http://www.metacritic.com/search/movie/{search_term}/results?sort={key}'
         source = get(url, headers=mp.headers()).text
