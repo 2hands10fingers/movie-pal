@@ -23,7 +23,7 @@ class HtmlGen():
         file.write(f'''
         <html>
             <head>
-                <title>MoviePal - UI</title>
+                <title>🎥 Movie Pal</title>
                 <script
                     src="https://code.jquery.com/jquery-3.3.1.min.js"
                     integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -36,10 +36,10 @@ class HtmlGen():
                 </script>
                 <script 
                     type="text/javascript" 
-                    src="js/SheetClip.js"></script>
+                    src="../ui/js/SheetClip.js"></script>
                 <script
                     type="text/javascript"
-                    src="js/copydata.js"
+                    src="../ui/js/copydata.js"
                     ></script>
                 <link
                     href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
@@ -60,6 +60,7 @@ class HtmlGen():
             </head>
             <body>
                 <div class="movies--wrapper">
+                  <div data-toggle="modal" data-target="#myModal" class="nav-mp">Search</div>
                     <div class="movies--container container">
                         ''')
         print('Gathering film titles...')
@@ -151,11 +152,11 @@ class HtmlGen():
                 pass
 
         file.write(f'''</div></div>
-                        <div data-toggle="modal" data-target="#myModal" class="copy-all">
+                        <div class="copy-all">
                         <span>Copy All</span>
                         </div>
-                        <div class="modal fade" id="myModal" tabindex="-1" role="dialog">
-                            <div class="modal-dialog" role="document">
+                        <div class="modal" id="myModal" tabindex="-1" role="dialog">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title">Get Film Info</h5>
@@ -171,7 +172,7 @@ class HtmlGen():
                                 
                                     
                                     <script src="../config.js"></script>
-                                    <script src="../search.js" type="text/javascript"></script>
+                                    <script src="js/search.js" type="text/javascript"></script>
                                 
                                     </input>
                                 

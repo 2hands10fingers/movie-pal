@@ -24,6 +24,10 @@ parser.add_argument("-it", "--in_theaters", action="store_true",
                           " Limit it to the site by setting key to rt, imdb, or meta"))
 parser.add_argument("-box", "--boxoffice", action="store_true",
                     help=("Displays boxoffice numbers for all movies in theaters."))
+parser.add_argument("-metas", "--meta_search", action="store_true",
+                    help=("Search movie scores on Metacritic."))
+parser.add_argument("-meta", "--meta_in_theaters", action="store_true",
+                    help=("Search movie scores on Metacritic."))
 
 args = parser.parse_args()
 
@@ -59,6 +63,11 @@ def main():
         mp.key_loop(x)
     if args.boxoffice:
         mp.boxoffice()
+    if args.meta_search:
+        mp.meta_search(args.meta_search, key=args.key)
+    if args.meta_in_theaters:
+        print(mp.looper(mp.metac()))
+    
 
 
 if __name__ == '__main__':

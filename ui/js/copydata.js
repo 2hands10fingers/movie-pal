@@ -13,8 +13,18 @@ const $ = jQuery;
 	}
 
 	function copyText() {
-		$('.copy-all').addClass('show');
-		setTimeout(function(){$('.copy-all').removeClass('show')}, 3000)
+
+		randNum = Math.round(Math.random() * 1)
+
+		if (randNum === 1) {
+			log('YES');
+			$('.copy-all').addClass('show');
+			setTimeout(function(){$('.copy-all').removeClass('show')}, 3000);
+		} else {
+			$('.copy-all').addClass('show-two');
+			setTimeout(function(){$('.copy-all').removeClass('show-two')}, 3000);
+		}
+		
 	}
 
 	$('.link--wrapper').click(function(){
