@@ -15,9 +15,7 @@
       
       var builder = '<div class="section">'
       for (var i = 0; i < returnedData.length; i++) {
-          
           builder += '<p class="title-data"><strong>' + returnedData[i] + ":</strong> "+ data[returnedData[i]] + '</p><hr>';
-          
       }
       builder += '</div>'
       dataClass.append(builder)
@@ -53,11 +51,15 @@
               }
                 
             } else if (x === "Title")  {
-              theBuilder += '<div class="year-title-top"><p style="margin-bottom:0;font-size:2rem;text-align:center;">' + items[i][x] + '</p>';
+              theBuilder += '<div class="year-title-top"><p style="margin-bottom:0;font-size:2rem;text-align:center;">' 
+                         + items[i][x] + '</p>';
+
             } else if (x === "Year")  {
-              theBuilder += '<p style="text-align:center;">' + items[i][x] + '</p></div>';
+              theBuilder += '<p style="text-align:center;">' 
+                         + items[i][x] + '</p></div>';
             } else if (x === "imdbID")  {
-              theBuilder += '<div class="databuttons"><a target="_blank" href="https://www.imdb.com/title/' + items[i][x] + '" >Visit Site</a> <span onclick=idSearch("'+ items[i][x] +'")>Get Data</span></div></p>';
+              theBuilder += '<div class="databuttons"><a target="_blank" href="https://www.imdb.com/title/' 
+                         + items[i][x] + '" >Visit Site</a> <span onclick=idSearch("'+ items[i][x] +'")>Get Data</span></div></p>';
             } else if (x === "Type")  {
               //pass
             } else {
@@ -78,22 +80,29 @@
 
 
 function idSearch(id){
-  let queryType = 'getdata'
+  let x = document.getElementById("search").value;
+  let queryType = 'getdata';
   grabTitle(queryType, id);
+  x = '';
 }
 
 function inputGrabber() {
   let queryType = 'title';
   
+  if (config["config"]["key"] === "KEYHERE" || config["config"]["key"] === ""){
+    alert("API Key Missing!");
+  }
+
   if ($('.searchinput')[0].checked === true) {
       queryType = 'search'  
     }
 
-    x = document.getElementById("search").value;
+    let x = document.getElementById("search").value;
     if (x == "") {
         alert("Name must be filled out");
         return false;
     }
-
+    
       grabTitle(queryType, x);
+      x = "";
 }
