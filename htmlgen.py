@@ -151,7 +151,7 @@ class HtmlGen():
             except UnicodeEncodeError:
                 pass
 
-        file.write(f'''</div></div>
+        file.write('''</div></div>
                         <div class="copy-all">
                         <span>Copy All</span>
                         </div>
@@ -173,7 +173,9 @@ class HtmlGen():
                                     
                                     <script src="../config.js"></script>
                                     <script src="js/search.js" type="text/javascript"></script>
-                                
+                                        
+                                       
+
                                     </input>
                                 
                                     <div class="data">

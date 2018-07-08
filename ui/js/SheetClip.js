@@ -40,7 +40,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   }
 
   global.SheetClip = {
-    parse: function (str) {
+    parse: function(str)  {
       var r, rlen, rows, arr = [], a = 0, c, clen, multiline, last;
       rows = str.split('\n');
       if (rows.length > 1 && rows[rows.length - 1] === '') {
@@ -78,7 +78,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
       return arr;
     },
 
-    stringify: function (arr) {
+    stringify: function(arr) {
       var r, rlen, c, clen, str = '', val;
       for (r = 0, rlen = arr.length; r < rlen; r += 1) {
         for (c = 0, clen = arr[r].length; c < clen; c += 1) {
@@ -87,12 +87,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
           }
           val = arr[r][c];
           if (typeof val === 'string') {
-            if (val.indexOf('\n') > -1) {
-              str += '"' + val.replace(/"/g, '""') + '"';
-            }
-            else {
-              str += val;
-            }
+            (val.indexOf('\n') > -1) ? str += '"' + val.replace(/"/g, '""') + '"' : str += val;
           }
           else if (val === null || val === void 0) { //void 0 resolves to undefined
             str += '';

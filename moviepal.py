@@ -290,8 +290,11 @@ class mp():
                 except KeyError:
                     pass
                 finally:
-                    if movie["Response"] != 'True':
-                        pass
+                    try:
+                        if movie["Response"] != 'True':
+                            pass
+                    except TypeError:
+                            pass
                     if printer == True and key != "":
                         try:
                             print(movie[key])

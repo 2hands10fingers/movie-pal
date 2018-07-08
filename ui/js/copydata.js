@@ -1,79 +1,84 @@
 document.addEventListener('DOMContentLoaded', function() {
 const $ = jQuery;
-
-	function log(string){ console.log(string); }
-
+var atrributes = ["title", "plot", "boxoffice", "genre", 
+				  "runtime", "mtc", "imdb", "rotten"]
+				  
 	function copier(string) {
-		var textArea = document.createElement("textarea");
-		textArea.value = string;
+		var textArea = document.createElement('textarea');
+        textArea.value = string;
 		document.body.appendChild(textArea);
-		textArea.select();
-		document.execCommand("Copy");
+        textArea.select();
+        document.execCommand("Copy");
 		textArea.remove();
-	}
+    }
 
 	function copyText() {
-
-		randNum = Math.round(Math.random() * 1)
-
-		if (randNum === 1) {
-			log('YES');
-			$('.copy-all').addClass('show');
-			setTimeout(function(){$('.copy-all').removeClass('show')}, 3000);
-		} else {
-			$('.copy-all').addClass('show-two');
-			setTimeout(function(){$('.copy-all').removeClass('show-two')}, 3000);
-		}
-		
+		let randNum, speechSelections, copyAll;
+		speechSelections = [
+		'ROGER THAT!', 
+		'COPIED!', 
+		"EXCELLENT CHOICE!", 
+		"AS YOU WISH!",
+		"It's probably not better than Die Hard, but here you go!"]
+		randNum = Math.round(Math.random() * speechSelections.length - 1)
+		copyAll = $('.copy-all')
+		copyAll.attr("data-copy", speechSelections[randNum]).addClass('show')
+		setTimeout(() => { copyAll.removeClass('show') }, 3000)
 	}
 
-	$('.link--wrapper').click(function(){
-		let theData = $('.datarow', this);
-		
-		function attri(str){return theData.data(str);}
-		let row = [
-				 attri('title'),
-				 attri('plot'),
-				 attri('boxoffice'),
-				 attri('genre'),
-				 attri('runtime'),
-				 attri('mtc'),
-				 attri('imdb'),
-				 attri('rotten')
-							]
-		let arrangeRow = [row];
-		let processRow = SheetClip.stringify(arrangeRow);
-		
+	$('.link--wrapper').on('click', function() {
+		let theData, arrangeRow, processRow;
+		theData = $('.datarow', this);			
+		arrangeRow = [ atrributes.map( x => theData.data(x)) ]
+		processRow = SheetClip.stringify(arrangeRow);
 		copier(processRow);
 		copyText();
-
 	});
 
-	$('.copy-all').click(function(){
-		let classFind = document.getElementsByClassName('datarow')
-		let arrangeRow = [];
-
-		for (var i = classFind.length - 1; i >= 0; i--) {
-			movie = classFind[i]["dataset"];
-			row = [	
-					movie["title"],
-					movie["plot"],
-					movie["boxoffice"],
-					movie["genre"],
-					movie["runtime"],
-					movie["mtc"],
-					movie["imdb"],
-					movie["rotten"]
-				  ];
-			
-			arrangeRow.push(row);
-
-		let processRow = SheetClip.stringify(arrangeRow);
-		
+	$('.copy-all').on('click', function() {
+		let classFind, arrangeRow, processRow;
+		classFind = document.querySelectorAll('.datarow')
+		arrangeRow = [];
+		classFind.forEach( movie => { 
+			arrangeRow.push( atrributes.map( datapoint => movie["dataset"][datapoint] ) ) 
+		})
+		processRow = SheetClip.stringify(arrangeRow);
 		copier(processRow)
 		copyText();
-
-		}
 	});
-
 }); //end
+
+// function fix() { 
+    
+//     function copiier(string) {
+        
+//         var textArea = document.createElement('textarea');
+// 		console.log(string)
+//         textArea.className += " otherclass"
+//         textArea.value = string;
+//         document.body.appendChild(textArea);
+//         textArea.select();
+//         document.execCommand("Copy");
+//         textArea.remove();
+//     }
+    
+
+// 		let theData = $('.data .datarow');
+// 		console.log(theData)
+//         function attri(str){return theData.data(str);}
+//         let row = [
+//                 attri('title'),
+//                 attri('plot'),
+//                 attri('boxoffice'),
+//                 attri('genre'),
+//                 attri('runtime'),
+//                 attri('mtc'),
+//                 attri('imdb'),
+//                 attri('rotten')
+//                             ]
+//         let arrangeRow = [row];
+//         let processRow = SheetClip.stringify(arrangeRow);
+//         copiier(processRow);
+        
+//   }
+    
