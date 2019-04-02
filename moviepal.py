@@ -14,6 +14,10 @@ import string
 from json import loads, load
 from time import sleep
 import webbrowser
+from headers import headers_class as hc
+from rotten_tomatoes import rt
+from imdb import imdb
+from metacritic import mt
 
 class mp():
 
@@ -38,10 +42,7 @@ class mp():
             mp.parameters['apikey'] = apikey
 
     def headers():
-        ua_one = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
-        ua_two = 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
-        headers = {'User-Agent': ua_one + ua_two}
-        return headers
+        return hc.headers()
 
     def boxoffice():
         '''
@@ -78,44 +79,13 @@ class mp():
                 pass
 
     def rotten():
-        source = get('''https://www.rottentomatoes.com/
-                    browse/in-theaters?minTomato=0
-                    &maxTomato=100
-                    &minPopcorn=0
-                    &maxPopcorn=100
-                    &genres=1;2;4;5;6;8;9;10;11;13;18;14&sortBy=release''').text
-        soup = bs(source, 'lxml')
-        js_source = soup.find_all("script")[38].prettify()
-        final_json = findall('\[{.*}\]', js_source)
-        try:
-            final_json = loads(final_json[0])
-        except IndexError:
-            SystemExit('Error fetching data. Please retry.')
-        finally:
-            final_json = [i['title'] for i in final_json]
-        return final_json
+        return rt.rotten()
 
     def imdb():
-        source = get(
-            'http://www.imdb.com/movies-in-theaters/?ref_=nv_mv_inth_1').text
-        soup = bs(source, 'lxml')
-        titles = soup.find_all('td', {"class": "overview-top"})
-        titles = [i.h4.a.text[:-7].lstrip() for i in titles]
-        return titles
+        return imdb.imdb()
 
     def metac():
-        source = get(
-            'http://www.metacritic.com/browse/movies/release-date/theaters/metascore', headers=mp.headers()).text
-        soup = bs(source, 'lxml')
-        imdb_movies = soup.find_all(
-            'div', {'class': 'browse_list_wrapper wide'})
-
-        titles_list = []
-        for i in imdb_movies:
-            scraped_titles = i.find_all('div', {'class': 'title'})
-            titles = [title.text.rstrip().lstrip() for title in scraped_titles]
-            titles_list.append(titles)
-        return sum(titles_list, [])
+        return mc.meatc()
 
     def meta_search(search_term, key=''):
         search_keys = ['relevancy', 'rel', 'score', 'recent']
@@ -182,87 +152,10 @@ class mp():
         return mp.requester(key)
 
     def rotten_search(movie, key="", printer=False):
-        url = f'https://www.rottentomatoes.com/search/?search={movie}'
-        source = get(url).text
-        soup = bs(source, 'lxml')
-        rotten_results = soup.find_all('script')
-        for i in rotten_results:
-            scraped_json = i.text.rstrip().lstrip()
-            if scraped_json.startswith(
-                    ("require(['jquery', 'globals', 'search-results',",
-                        "'bootstrap'], function($, RT, mount)")):
-                movies = findall('({.*})', scraped_json)[0]
-                movies = loads(movies)
-
-                if key == 'print':
-                    printer = True
-
-                if key == 'verbose':
-                    links = [i["url"] for i in movies["movies"]]
-                    for url in links:
-                        mp.rotten_scraper(url, key='slug')
-
-                if printer == True:
-                    return mp.super_sort(movies)
-                return movies
+        return rt.rotten_search(movie, key, printer)
 
     def rotten_scraper(entry, the_year='', key=''):
-        rotten_link = 'https://www.rottentomatoes.com{}{}{}'
-
-        def link_mangler(entry):
-            return entry.lower().replace(" ", "_")
-
-        def the_url(year):
-            if key == 'slug':
-                link = rotten_link.format('/m/', entry, '')
-            else:
-                link = rotten_link.format('/m/', link_mangler(entry), year)
-            return link
-
-        def perform(source):
-            the_page = source.text
-            soup = bs(the_page, 'lxml')
-            audience_review = ''
-            rotten_rating = ''
-
-            print('-' * 20)
-            print(f'Page Title: "{soup.find("title").text}"\n')
-
-            try:
-                audience_review = soup.find(
-                    'div',
-                    {'class': 'audience-score'}).find(
-                    'div',
-                    {'class': 'meter-value'}).span.text
-            except AttributeError:
-                audience_review = soup.find(
-                    'div', {'class': 'audience-score'}).find(
-                        'div', {'class': 'noScore'}).text
-
-            titles = soup.find('script', {'id': 'jsonLdSchema'}).text
-            titles = loads(titles.encode('ascii', 'ignore').decode('ascii'))
-            try:
-                rotten_rating = str(
-                    titles["aggregateRating"]["ratingValue"]) + "%"
-            except KeyError:
-                rotten_rating = 'Tomatometer Not Available'
-
-            the_ratings = {"AudienceRating": audience_review,
-                           "AverageRating": rotten_rating}
-            if key == '':
-                return the_ratings
-            mp.sorter(the_ratings)
-            print()
-
-        def get_this(year):
-            if year == '':
-                return get(the_url(year))
-            return get(the_url(f'_{year}'))
-
-        if get_this(the_year).status_code == 404:
-            raise SystemExit(
-                "404 ERROR: \nThat didn't seem to work. Try entering a year or a different title.")
-        return perform(get_this(the_year))
+        return rt.rotten_scraper(entry, the_year, key)
 
     def search(self, key=""):
         mp.parameters['s'] = self
@@ -328,9 +221,7 @@ class mp():
         return the_query
 
     def sorter(self):
-        keys = list(self)
-        for i in keys:
-            print(f'{i}: {self[i]}')
+        rt.sorter(self)
 
     def looper(self):
         for i in self:
@@ -346,22 +237,5 @@ class mp():
             print()
 
     def super_sort(data, dict_key="movies"):
-        for movie in data[dict_key]:
-            print('-' * 20)
-            for k, v in movie.items():
-                if isinstance(movie[k], list):
-                    if k == 'castItems':
-                        print('Cast:')
-                    else:
-                        print(f'{k}:')
-                    for x in movie[k]:
-                        if isinstance(x, dict):
-                            for key, value in x.items():
-                                if key == "url":
-                                    print(f'\t\t{key}: https://rottentomatoes.com{value}')
-                                else:
-                                    print(f'\t{key}: {value}')
-                else:
-                    print(f'{k}: {v}')
-
+        rt.super_sort(data, dict_key)
 mp.api()
